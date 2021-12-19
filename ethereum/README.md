@@ -1,5 +1,10 @@
 # Ethereum
 
+## 前提
+
+- nvm
+- yarn
+
 ## 実行方法
 
 ```sh
