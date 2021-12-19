@@ -1,36 +1,24 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
-describe("Greeter", function () {
-  it("Should return the new greeting once it's changed", async function () {
-    const Greeter = await ethers.getContractFactory("Greeter");
-    const greeter = await Greeter.deploy("Hello, world!");
-    await greeter.deployed();
-
-    expect(await greeter.greet()).to.equal("Hello, world!");
-
-    const setGreetingTx = await greeter.setGreeting("Hola, mundo!");
-
-    // wait until the transaction is mined
-    await setGreetingTx.wait();
-
-    expect(await greeter.greet()).to.equal("Hola, mundo!");
-  });
-});
-
 describe("NFT", function () {
-  it("Should mint", async function () {
-    const Greeter = await ethers.getContractFactory("Greeter");
-    const greeter = await Greeter.deploy("Hello, world!");
-    await greeter.deployed();
+  it("Should mint and transfer", async function () {
+    const [owner, recipient] = await ethers.getSigners();
 
-    expect(await greeter.greet()).to.equal("Hello, world!");
+    const NFT = await ethers.getContractFactory("NFT");
+    const nft = await NFT.deploy();
+    await nft.deployed();
 
-    const setGreetingTx = await greeter.setGreeting("Hola, mundo!");
+    const mintTx = await nft.safeMint(owner.address);
+    const receipt = await mintTx.wait();
 
-    // wait until the transaction is mined
-    await setGreetingTx.wait();
+    const tokenId = receipt.events[0].args.tokenId.toString();
 
-    expect(await greeter.greet()).to.equal("Hola, mundo!");
+    expect(await nft.ownerOf(tokenId)).to.equal(owner.address);
+
+    const transferFromTx = await nft.transferFrom(owner.address, recipient.address, tokenId);
+    await transferFromTx.wait();
+
+    expect(await nft.ownerOf(tokenId)).to.equal(recipient.address);
   });
 });
